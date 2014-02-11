@@ -1,0 +1,29 @@
+@CHARSET "UTF-8";
+
+body{
+font-family:"微软雅黑";
+}
+.coolbg{
+background-image:url(../Images/button.gif);
+text-decoration:none;
+color:#000000;
+font-size:11px;
+padding:3px 3px 1px 3px;
+border-style:solid;
+border-width:1px;
+border-color:#CCCCCC;
+}
+td a{
+text-decoration:none;
+color:#000000;
+}
+td a:hover{
+color:#996633;
+}
+.time
+{
+	font-size:9px;
+}
+table{
+	font-size:13px;
+}

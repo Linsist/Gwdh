@@ -1,0 +1,47 @@
+/* CSS Document */
+BODY {
+
+}
+
+a {
+	TEXT-DECORATION: none;
+	color:#333333;
+}
+a:hover {
+	COLOR: #ff6600; TEXT-DECORATION: underline;
+}
+
+#container{
+float:left;
+width:170px;
+}
+
+.title{
+	width:158px;
+	cursor:n-resize;
+	background: #cfcdaf;
+	padding:2px 0px 2px 12px;
+	border-bottom-color:#CCCCCC;
+    border-bottom-style:solid;
+    border-bottom-width:thin;
+}
+.title span
+{
+font-weight:600;
+font-size:12px;
+color:#666666;
+font-family:"Î¢ÈíÑÅºÚ";
+}
+.menu{
+width:150px;
+padding:2px 0px 2px 20px;
+background:#ebeadd;
+display:none;
+}
+
+.menu span{
+FONT-WEIGHT: normal; FONT-SIZE: 12px; color:#333333; LINE-HEIGHT: normal; FONT-STYLE: normal; FONT-VARIANT: normal; 
+display:block;
+margin:6px 0px;
+}
+

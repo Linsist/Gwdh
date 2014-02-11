@@ -1,0 +1,171 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>无标题文档</title>
+<style type="text/css">
+body{
+	font-family:"微软雅黑";
+}
+span{
+	font-size:12px;
+}
+a{
+	text-decoration:none;
+	color:#fff;
+	font-size:24px;
+}
+</style>
+<script src="__JS2__/jquery.js"></script>
+<script type="text/javascript">
+var site_url;
+$(document).ready(function(){
+	site_url=$('#site_url').val();//初始化
+
+	function isNotNull(value) {
+		value = $.trim(value);
+		if (value != '') {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	function isValidPassword(password) {
+		var pattern = /^([a-zA-Z0-9]|[_]){6,16}$/;   
+		if (!pattern.test(password)) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+	
+	function isSign_user_name(name){
+		var bool;
+	    $.ajax({
+			async: false,
+			type: 'post',
+			url: "{:U('Admins/checkName')}",
+			data: {'name': name},
+			success: function(result) {	
+				var msg = $.parseJSON(result);
+				if (msg.status==1) {
+					$('#e_user_name').css('color','red');
+					$('#e_user_name').html(msg.info);
+					bool=true;
+				} else {
+					$('#e_user_name').html('good');
+					bool=false;
+				}
+			}	
+		});
+		return bool;	
+	}
+
+	function checkUsername() {
+	    var user_name = $('#name').val();
+	    if(!isNotNull(user_name)){
+	    	$('#e_user_name').css('color','red');
+	    	$('#e_user_name').html('用户名不能为空');
+	    	return false;
+	    }
+	    return !isSign_user_name(user_name);
+	}
+
+	function checkPassword() {
+	    var password = $('#pass_word').val();
+	    if (!isValidPassword(password)) {
+	    	$('#e_pass_word').css('color','red');
+	        $('#e_pass_word').html('密码为6-16位字母数字下划线组合');
+	        return false;
+	    } else {
+	        $('#e_pass_word').html('good');
+	        return true;
+	    }
+	}
+
+	function checkPassword2() {
+	    var password = $('#pass_word').val();
+	    var password2 = $('#pass_word2').val();
+	    if (password != password2) {
+	    	$('#e_pass_word2').css('color','red');
+	        $('#e_pass_word2').html('两次密码不相同');
+	        return false;
+	    }else if (!isValidPassword(password2)) {
+	    	$('#e_pass_word2').css('color','red');
+	        $('#e_pass_word2').html('密码为6-16位字母数字下划线组合');
+	        return false;
+	    } else {
+	        $('#e_pass_word2').html('good');
+	        return true;
+	    }
+	}
+	function check_sign_field(){
+	    var c_user_name = checkUsername();
+	    var c_password = checkPassword();
+	    var c_password2= checkPassword2();
+
+	    if (c_user_name && c_password && c_password2) {           
+            return true;
+        } else {
+            return false;
+        }	
+	}
+
+	$('#name').blur(function(){
+		    checkUsername();
+	});
+	$('#pass_word').blur(function(){
+    	checkPassword();
+    });
+	$('#pass_word').focus(function(){
+		$('#e_pass_word').html('密码为6-16位字母数字下划线组合');
+    });
+    $('#pass_word2').blur(function(){
+    	checkPassword2();
+    	
+    });
+	$('#add_form').submit(function(){
+    	if(!check_sign_field()){
+        	e.preventDefault();
+    		$('#e_all').css('color','red');
+        	$('#e_all').html('请填写完全信息');
+    	}
+    });
+	
+	
+});
+</script>
+</head>
+<body>
+
+<fieldset>
+ <legend> 添加管理员</legend>
+ <form id="add_form" action="{:U('Admins/add')}" method="post">
+<table width="688" border="0" style="bordercolor:#CCCCCC"cellspacing="0" cellpadding="5">
+  <tr>
+    <td width="94"><div align="right">姓 名：</div></td>
+    <td width="568">
+	    <input type="text" name="name" id="name" value='' />
+	    <span id="e_user_name"></span>
+    </td>
+  </tr>
+  <tr>
+    <td><div align="right">密 码：</div></td>
+    <td><input type="password" name="password" id="pass_word" /><span id="e_pass_word"></span></td>
+  </tr>
+  <tr>
+    <td><div align="right">确认密码：</div></td>
+    <td><input type="password" name="repeat_password" id="pass_word2" /><span id="e_pass_word2"></span></td>
+  </tr>
+  <tr>
+    <td><span id="e_all"></span></td>
+    <td>
+    	<input type="submit" name="submitted" value="提交" />
+    	
+    </td>
+  </tr>
+</table>
+</form>
+</fieldset>
+</body>
+</html>

@@ -1,0 +1,792 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>广外导航</title>
+<link rel="stylesheet" href="__PLUGIN__/jquery-ui/themes/base/jquery.ui.all.css"/>
+<link rel="stylesheet" href="__CSS2__/demos.css"/>
+<link rel="stylesheet" href="__CSS2__/backtotop.css"/>
+<link rel="stylesheet" href="__CSS2__/admin_website.css"/>
+
+
+<script src="__JS2__/jquery-1.8.0.min.js"></script>
+<!-- <script src="__PLUGIN__/jquery-ui/jquery-1.9.1.js"></script> -->
+<script src="__PLUGIN__/jquery-ui/ui/jquery.ui.core.js"></script>
+<script src="__PLUGIN__/jquery-ui/ui/jquery.ui.widget.js"></script>
+<script src="__PLUGIN__/jquery-ui/ui/jquery.ui.mouse.js"></script>
+<script src="__PLUGIN__/jquery-ui/ui/jquery.ui.sortable.js"></script>
+<script src="__PLUGIN__/jquery-ui/ui/jquery.ui.button.js"></script>
+<script src="__PLUGIN__/jquery-ui/ui/jquery.ui.draggable.js"></script>
+<script src="__PLUGIN__/jquery-ui/ui/jquery.ui.position.js"></script>
+<script src="__PLUGIN__/jquery-ui/ui/jquery.ui.dialog.js"></script>
+<script src="__PLUGIN__/AjaxFileUploader/ajaxfileupload.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+var type_id;//全局变量
+var id;
+var site_url;
+
+function check_add_reset(name,site)
+{	
+	//检查名字
+	if(name =='')
+	{
+		alert('请填写网址名字！！'); 
+		return false;
+	}
+	if(site =='')
+	{ 
+		return true;
+	}
+	//检查网址
+	var patten = /^((https?|ftp|news):\/\/)?([^\s"<>\.\*]+)(\.[^\s"<>\.\*]+)+$/; //为了扩大限制而设置的
+	var  rs = patten.exec(site);
+	if ( rs == null)
+	{
+		return false;
+	}
+	return true;
+}
+function isValidateSite(site){
+	if(site.trim() =='')
+	{ 
+		return true;
+	}
+	//检查网址
+	var patten = /^((https?|ftp|news):\/\/)?([^\s"<>\.\*]+)(\.[^\s"<>\.\*]+)+$/; //为了扩大限制而设置的
+	var  rs = patten.exec(site);
+	if ( rs == null)
+	{
+		return false;
+	}
+	return true;
+}
+
+
+$(function(){
+	$( "#type-confirm" ).dialog({
+		resizable: false,
+		autoOpen: false,
+		show: "blind",
+		hide:"explode",
+		height:200,
+		width:400,
+		modal: true,
+		buttons: {
+			'确认添加':function(){
+				var siteType=$('#add_type').val();
+				siteType = siteType.replace(/^\s+|\s+$/g,"");//去空格
+				if(siteType==''){
+					 alert('请填写类别的名字');
+					 return false;
+				}
+				
+				$.ajax({
+					type:"post",
+					async:false,
+					url:"{:U('Site/addSiteType')}",
+					data:{'siteType':siteType},
+					success:function(data){
+						var msg=$.parseJSON(data);
+						if(msg.status==1){
+							$( this ).dialog( "close" );
+							window.location.reload();
+						}else{
+							$( this ).dialog( "close" );
+							alert(msg.info);
+							return false;
+						}	
+					}
+				});
+			
+				
+			},
+			'取消':function(){
+				$( this ).dialog( "close" );
+			}
+		}
+	});
+});
+
+$(function(){
+	$( "#type-reset-confirm" ).dialog({
+		resizable: false,
+		autoOpen: false,
+		show: "blind",
+		hide:"explode",
+		height:200,
+		width:400,
+		modal: true,
+		buttons: {
+			'确认修改':function(){
+				var siteType=$('#type_name').val();
+				siteType = siteType.replace(/^\s+|\s+$/g,"");//去空格
+				if(siteType==''){
+					 alert('请填写类别的名字');
+					 return false;
+				}
+				return_id=$.ajax({
+					type:"post",
+					async:false,
+					url:"{:U('Site/updateSiteType')}",
+					data:{'siteType':siteType,'typeId':type_id}
+				});
+				var msg = $.parseJSON(return_id.responseText);
+				if(msg.status ==0){
+					alert(msg.info);
+					return false;
+				}	
+				$(".name"+type_id).html(siteType);
+				$(".site_container[alt="+type_id+"] .site_title").html(type_id+'|'+siteType);
+			
+				$( this ).dialog( "close" );
+			},
+			'取消':function(){
+				$( this ).dialog( "close" );
+			},
+			'删除':function(){
+				if(!confirm('确定删除？'))
+				{
+					return false;
+				}
+				return_id=$.ajax({
+					type:"post",
+					async:false,
+					url:"{:U('Site/deleteSiteType')}",
+					data:{'typeId':type_id}
+				});
+				var msg = $.parseJSON(return_id.responseText);
+				if(msg.status ==0){
+					alert(msg.info);
+					return false;
+				}	
+				$(".each_type_item[alt="+type_id+"]").remove();
+				$(".site_container[alt="+type_id+"]").remove();
+				$( this ).dialog( "close" );
+			}
+		}//end of button
+	});
+});
+
+
+
+/******顺序拖动******/
+$(function() {
+	$( ".connectedSortable" ).sortable({
+		connectWith: ".connectedSortable",
+		placeholder: "ui-state-highlight"
+	}).disableSelection();
+	
+});
+
+/***排序的对话框   ***/
+$(function(){
+	$( "#order-confirm" ).dialog({
+		resizable: false,
+		autoOpen: false,
+		show: "blind",
+		hide:"explode",
+		height:200,
+		width:400,
+		modal: true,
+		buttons: {
+			'确认修改排序':function(){
+				var old_order=[];
+				$('.site_content[alt='+type_id+'] .ui-state-default').each(function(){
+					old_order.push($(this).attr('alt'));
+				});
+				var orders=old_order.join('|');
+				return_id=$.ajax({
+					type:"post",
+					async:false,
+					url:"{:U('Site/resetOrder')}",
+					data:{'orders':orders}
+				});
+				$( this ).dialog( "close" );
+			},
+			'取消':function(){
+				$( this ).dialog( "close" );
+			}
+		}//end of button
+	});
+});
+
+$(function(){
+	$( "#add-confirm" ).dialog({
+		resizable: false,
+		autoOpen: false,
+		show: "blind",
+		hide:"explode",
+		height:400,
+		width:600,
+		modal: true,
+		buttons: {
+			'确认添加':function(){
+				var web = {};
+				web.name=$('#add_name').val();
+				web.site=$('#add_site').val();
+				web.blog=$('#add_blog').val();
+				web.weibo=$('#add_weibo').val();
+				web.logo=$('#add_logo').val();
+				web.typeId = type_id;
+				if(web.name.trim()==''){
+					alert('网站名字不能为空');
+					return false;
+				}
+				if(!isValidateSite(web.site))
+				{
+					alert('官方网址不合法');
+					return false;
+				}
+				if(!isValidateSite(web.blog))
+				{
+					alert('官方博客不合法');
+					return false;
+				}
+				if(!isValidateSite(web.weibo))
+				{
+					alert('官方微博不合法');
+					return false;
+				}
+				var isAddSuccess = addSite(web);
+
+				if (!isAddSuccess) {
+					alert('添加失败');
+				}
+				
+				//给新添加的增加事件监听
+				addSiteDbclickEvent();
+				
+				$( this ).dialog( "close" );
+				
+			},
+			'取消':function(){
+				$( this ).dialog( "close" );
+			}
+		}
+	});
+});
+/*-----------网址的reset------------*/
+$(function() {
+	$( "#reset-confirm" ).dialog({
+		resizable: false,
+		autoOpen: false,
+		show: "blind",
+		hide:"explode",
+		height:400,
+		width:600,
+		modal: true,
+		buttons: {
+			"确认修改": function() {
+				var web = {};
+				web.name = $('#update_name').val();
+				web.site = $('#update_site').val();
+				web.blog = $('#update_blog').val();
+				web.weibo = $('#update_weibo').val();
+				web.logo = $('#update_logo').val();
+				web.id = id;
+				if(web.name.trim()==''){
+					alert('网站名字不能为空');
+					return false;
+				}
+				if(!isValidateSite(web.site))
+				{
+					alert('官方网址不合法');
+					return false;
+				}
+				if(!isValidateSite(web.blog))
+				{
+					alert('官方博客不合法');
+					return false;
+				}
+				if(!isValidateSite(web.weibo))
+				{
+					alert('官方微博不合法');
+					return false;
+				}
+				updateSite(web);//更新网址
+				$( this ).dialog( "close" );
+				
+
+			},
+			"取消": function() {
+				$( this ).dialog( "close" );
+				id = 0;
+			},
+			"删除": function() {
+				if(!confirm('确定删除？'))
+				{
+					return false;
+				}
+				return_id=$.ajax({
+					type:"post",
+					async:false,
+					url:"{:U('Site/deleteSite')}",
+					data:{'id':id}
+				});
+				var msg = $.parseJSON(return_id.responseText);
+				if(msg.status ==0){
+					alert(msg.info);
+					return false;
+				}	
+				$(".ui-state-default[alt="+id+"]").remove();
+				$( this ).dialog( "close" );
+				
+			}
+		}
+	});
+});
+
+/****-------上面是网址的管理-------------------------------------****/
+
+$(document).ready(function(){
+	site_url=$('#site_url').val();
+	addSiteDbclickEvent();//给每一个网址添加鼠标双击事件
+
+	$('#open_add_type').click(function(){
+		$('#type-confirm').dialog("open");
+	});
+	
+	$('.each_type_item').dblclick(function(){
+		type_id=$(this).attr('alt');
+		var m_type_name=$(this).find('a:last').text();
+		$('#type_name').val($.trim(m_type_name));
+		$('#type-reset-confirm').dialog("open");
+	});
+	
+	$('.add').click(function(){
+		type_id=$(this).attr('alt');//初始化type_id
+		$('#add-confirm').dialog("open");
+	});
+	
+	$('.edited').click(function(){
+		type_id=$(this).attr('alt');
+		$('#order-confirm').dialog("open");
+	});
+
+	
+});
+
+/**
+ *给每一个网址添加鼠标双击事件
+ */
+function addSiteDbclickEvent(){
+	$('.ui-state-default').dblclick(function(){
+		id=$(this).attr('alt');//初始化id
+		$.ajax({
+			type:"post",
+			async:false,
+			url:"{:U('Site/showSiteInfo')}",
+			data:{'id':id},
+			dataType:'json',
+			success:function(msg){
+				$('#update_name').val(msg.name);
+				$('#update_site').val(msg.site);
+				$('#update_blog').val(msg.blog);
+				$('#update_weibo').val(msg.weibo);
+				$('#update_logo').val(msg.logo);
+				if (msg.logo == null) {
+					$('#update_viewSite').attr('src','__UPLOAD__/default.png');
+				}else{
+					$('#update_viewSite').attr('src','__UPLOAD__/webshot/'+msg.logo);
+				}
+				
+			}
+		});
+		$('#reset-confirm').dialog("open");
+		
+	});	
+}
+</script>
+
+
+</head>
+
+<body>
+<div id="wrap">
+<table width="96%" border="0" cellpadding="3" cellspacing="1" bgcolor="#D6D6D6" align="center"><tbody>
+    <tr> 
+      <td height="20" background="images/tbg.gif"> <table width="98%" border="0" cellpadding="0" cellspacing="0">
+          <tbody><tr> 
+            <td width="30%" height="18" style="padding-left:10px;"><strong>相关操作：</strong></td>
+            <td width="70%" align="right">&nbsp; </td>
+          </tr>
+        </tbody></table></td>
+    </tr>
+    <tr> 
+      <td height="20" valign="top" bgcolor="#FFFFFF" style="line-height:20px;">
+      	以下为相关的操作要点：    	<br/>
+      	1、单击类别可以定位到对应区域，以便查看；双击类别可以进行修改<br />
+      	2、拖动排序后，需要点击确认修改以记录顺序，双击网址可以进行修改       <br/>
+        3、在本页面修改不会立即影响到主页，请在修改完成后到更新主页栏目更新主页
+      </td>
+    </tr>
+
+  </tr>
+</tbody></table>
+<!-- -------------------网址类别显示列表----------------------------- -->
+<div id="type_container">
+	<div id="type_head">网址分类</div>
+	<div id="type_content">
+		<ul id="type_item">
+		<volist name="siteType" id="row">
+			<li class="each_type_item" alt="{$row.typeId}">
+			<a class="type_click">&nbsp;&nbsp;&nbsp;</a>
+			<a href="#name{$row.typeId}" class="name{$row.typeId}">{$row.siteType}
+				</a>
+			</li>
+		</volist>
+		</ul>
+	</div>
+	<div id="type_foot">
+		<button class="coolbg" id="open_add_type">增加类别</button>
+	</div>
+</div>
+
+<!-- -------------------网址显示列表----------------------------- -->
+<volist name="siteType" id="type" >
+<a name="name{$type.typeId}"></a>
+<div class="site_container" alt="{$type.typeId}" >
+
+    <div class = "site_title">{$type.typeId}|{$type.siteType}</div>
+    <div class = "site_content"  alt="{$type.typeId}">
+    	<ul id="sortable" class="connectedSortable" alt="{$type.typeId}">
+    	
+    	<php>$getSite = get_site($type['typeId']); </php>
+    		<volist name="getSite" id="site">	
+				<li class="ui-state-default" alt="{$site.id}" title="{$site.site}">
+					{$site.name}
+				</li>
+ 			</volist>	
+		 </ul>
+    </div>
+     <div class = "site_foot">
+     	<button class="coolbg add" alt="{$type.typeId}">增加网址</button>
+     	<button class="coolbg edited" alt="{$type.typeId}">确认修改排序</button>
+    </div>
+    
+</div>
+</volist>
+<!-- ----------------循环显示的结束---------------- --------------------------- -->
+
+<div id="type-confirm" title="添加分类"><br/>
+	<form>
+	<table>
+		<tr>
+		<td align="left">分类名字</td>
+		<td>:<input id="add_type" type="text" value="" size="30" /></td>
+	</tr>
+	</table>
+    </form>
+</div>
+
+<div id="type-reset-confirm" title="修改分类">
+	<form>
+	<table>
+		<tr>
+		<td align="left">分类名字</td>
+		<td>:<input id="type_name" type="text" value="" size="30" /></td>
+	</tr>
+	</table>
+    </form>
+</div>
+
+
+<div id="add-confirm" title="增加新网址"><br />
+	<form>
+	<table>
+	<tr>
+		<td align="left">添加标题</td>
+		<td>:<input id="add_name" type="text" value="" size="30" /></td>
+	</tr>
+	<tr>
+		<td align="left">官方网址</td>
+		<td>:<input id="add_site" type="text"  value="" name="site" size="30"/></td>
+	</tr>
+	<tr>
+		<td align="left">官方博客</td>
+		<td>:<input id="add_blog" type="text" size="30"/></td>
+	</tr>
+	<tr>
+		<td align="left">官方微博</td>
+		<td>:<input id="add_weibo" type="text" size="30" /></td>
+	</tr>
+	<tr>
+		<td align="left"><input type="button" id="getWebshot" value="截屏"/>或者</td>
+		<td>
+			<input type="file" id="add_upload" name="add_upload" / >
+		</td>
+	</tr>
+	<tr>
+		<td align="left"><input type="hidden" id="add_logo"/></td>
+		<td><img id="add_viewSite" style="width:230px;" src=""/></td>
+	</tr>
+	
+	</table>
+    </form>
+</div>
+
+
+<div id="reset-confirm" title="修改网址">
+<br />
+	<form>
+	<table>
+		<tr>
+		<td align="left">网站标题</td>
+		<td>:<input id="update_name" type="text" value="" size="30" /></td>
+	</tr>
+		<tr>
+		<td align="left">官方网址</td>
+		<td>:<input id="update_site" type="text"  value="" name="site" size="30"/></td>
+	</tr>
+	<tr>
+		<td align="left">官方博客</td>
+		<td>:<input id="update_blog" type="text" /></td>
+	</tr>
+	<tr>
+		<td align="left">官方微博</td>
+		<td>:<input id="update_weibo" type="text"/></td>
+	</tr>
+	<tr>
+		<td align="left"><input type="button" id="reWebshot" value="重新截屏"/></td>
+		<td>
+			<input type="file" id="update_upload" name="update_upload" / >
+		</td>
+	</tr>
+	<tr>
+		<td align="left"><input type="hidden" id="update_logo"/></td>
+		<td><img id="update_viewSite" style="width:230px;" src=""/></td>
+	</tr>
+
+	</table>
+	</form>
+</div>
+<script type="text/javascript">
+$(document).ready(function() {
+
+	$('#getWebshot').click(function(){
+
+		var url = $('#add_site').val();
+		if (!isValidateSite(url)) {
+			alert('网址格式不合法');
+			return false;
+		}
+
+		webShot(url,function(logo){
+			$('#add_logo').val(logo);
+			$('#add_viewSite').attr('src','__UPLOAD__/webshot/'+logo);
+		});
+		
+	});
+
+	$('#reWebshot').click(function(){
+		var url = $('#update_site').val();
+		if (!isValidateSite(url)) {
+			alert('网址格式不合法');
+			return false;
+		}
+		webShot(url,function(logo){
+			$('#update_logo').val(logo);
+			$('#update_viewSite').attr('src','__UPLOAD__/webShot/'+logo);
+		});
+	});
+
+	//添加网址的上传框
+	$('#add_upload').live('change', function(){
+		fileUpload('add_upload', function(logo){
+			$('#add_logo').val(logo);
+			$('#add_viewSite').attr('src','__UPLOAD__/webShot/'+logo);
+		});
+		$(this).val('');
+	});
+	//更新网址的上传框
+	$('#update_upload').live('change', function(){
+		fileUpload('update_upload', function(logo){
+			$('#update_logo').val(logo);
+			$('#update_viewSite').attr('src','__UPLOAD__/webShot/'+logo);
+		});
+		$(this).val('');
+	});
+});
+
+/**
+ * ajax文件上传
+ * @param string upload_id
+ * @param function callback
+ */
+function fileUpload(upload_id,callback){
+	$.ajaxFileUpload({
+		url:'{:U("Site/ajaxUpload")}',
+		secureuri:false,
+		fileElementId: upload_id,
+		type: 'post',
+		dataType: 'json',
+		success: function (msg, status)
+		{
+			if (msg.status == 0) {
+				alert(msg.info);
+			}else{
+				var file = msg.data[0];
+				callback(file.savename);
+			}
+		},
+		error: function (data, status, e)
+		{
+			alert(e);
+		}
+	});
+}
+
+/**
+ * @param string url
+ * @param function callback 回调函数
+ * @return String 截图名字
+ */
+function webShot(url,callback){
+    $.ajax({
+        // xhr: null,
+        async: true,
+        type:'post',
+        url: '{:U("Site/ajaxWebshot")}',
+        dataType:'json',
+        data:{'url':url},
+        timeout: 30000,
+        success:function(msg){
+            callback(msg);//执行回调函数
+        },
+        error: function(xhr,msg,exception){
+            alert(msg);
+            xhr.abort();
+        }
+
+    });
+}
+
+/**
+ * 添加网址
+ * @param object web={type_id ,name,site,blog,weibo,logo}
+ * @return bool
+ */
+function addSite(web){
+	var bool = false;
+	$.ajax({
+		type:"post",
+		async:false,
+		url:"{:U('Site/addSite')}",
+		data:{'name':web.name,'site':web.site,'blog':web.blog,'weibo':web.weibo,'typeId':web.typeId,'logo':web.logo},
+		dataType: 'json',
+		success:function(msg){
+			if(msg.status ==0){
+				bool = false;
+			}else{
+				bool = true;
+				var li_add =  "<li class=\"ui-state-default\" alt="+msg.data.id+" title="+msg.data.site+">"+msg.data.name+"</li>";
+				$(".site_content[alt="+type_id+"] .connectedSortable").append(li_add);
+				$('#add_name').val('');
+				$('#add_site').val('');
+				$('#add_blog').val('');
+				$('#add_weibo').val('');
+				$('#add_logo').val('')
+			}
+		}
+	});	
+	return bool;	
+}
+
+/**
+ * 更新网址
+ * @param obj web{id,name,site,blog,weibo,logo}
+ * @return bool
+ */
+function updateSite(web){
+	var bool = false;
+	$.ajax({
+		type:"post",
+		async:false,
+		url:"{:U('Site/updateSite')}",
+		data:{'name':web.name,'site':web.site,'blog':web.blog,'weibo':web.weibo,'id':web.id,'logo':web.logo},
+		dataType: 'json',
+		success:function(msg){
+			if(msg.status ==0){
+				bool = false;
+			}else{
+				bool = true;
+				$(".ui-state-default[alt="+web.id+"]").html($("#update_name").val());
+				$(".ui-state-default[alt="+web.id+"]").attr("title",$("#update_site").val());
+			}
+		}
+	});				
+	return bool;	
+}
+
+
+</script>
+
+
+
+
+
+<div id="order-confirm" title="确认？">
+	<p>
+		<span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>
+		确认修改吗？
+	</p>
+	
+</div>
+
+
+
+
+
+</div><!-- end of wrap -->
+
+        
+<script type="text/javascript">
+(function() {
+    var $backToTopTxt = "返回顶部", $backToTopEle = $('<div class="backToTop"></div>').appendTo($("body"))
+        .text($backToTopTxt).attr("title", $backToTopTxt).click(function() {
+            $("html, body").animate({ scrollTop: 0 }, 120);
+    }), $backToTopFun = function() {
+        var st = $(document).scrollTop(), winh = $(window).height();
+        (st > 0)? $backToTopEle.show(): $backToTopEle.hide();
+        //IE6下的定位
+        if (!window.XMLHttpRequest) {
+            $backToTopEle.css("top", st + winh - 166);
+        }
+    };
+    $(window).bind("scroll", $backToTopFun);
+    $(function() { $backToTopFun(); });
+})();
+</script><!-------------back to top----------- -->
+<script>
+$(document).ready(function() {     
+	$('a[href*=#]').click(function() { 
+	        if (location.pathname.replace(/^\//, '') == this.pathname.replace(/^\//, '') && location.hostname == this.hostname) {
+				             var $target = $(this.hash); 
+							 $target = $target.length && $target || $('[name=' + this.hash.slice(1) + ']'); 
+							 if ($target.length) {
+								  var targetOffset = $target.offset().top;
+								  $('html,body').animate({scrollTop: targetOffset },800);
+								  return false;        
+							     }      
+								 
+				}  
+	}); 
+												   
+	var stayBottom = function(){
+		var offsetTop =   $(window).scrollTop() ;
+		if(offsetTop <400){
+			$("#icon_back2top").fadeOut("fast");	
+		}else{
+			$("#icon_back2top").fadeIn("fast");	
+		}										   
+	}
+	$(window).scroll(stayBottom).resize(stayBottom);	
+	
+									   
+});
+</script>
+
+
+</body>
+</html>

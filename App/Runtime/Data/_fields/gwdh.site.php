@@ -1,0 +1,1 @@
+{"0":"id","1":"name","2":"site","3":"blog","4":"weibo","5":"orders","6":"info","7":"typeId","_autoinc":true,"_pk":"id","_type":{"id":"int(11)","name":"varchar(20)","site":"varchar(100)","blog":"varchar(100)","weibo":"varchar(100)","orders":"int(11)","info":"text","typeId":"int(11)"}}

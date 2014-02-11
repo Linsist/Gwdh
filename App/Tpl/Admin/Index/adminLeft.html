@@ -1,0 +1,81 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>无标题文档</title>
+<link type="text/css" href="__CSS2__/admin_left_blue.css" rel="stylesheet" />
+<script type="text/javascript" language="javascript" src="__JS2__/jquery.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+	
+	$(".title").mouseover(function(){
+	   this.style.cursor = 'move';
+	  });
+	
+	$(".title").click(function(){
+	    $(this).next(".menu").slideToggle("slow");
+	  });
+	
+	$(".menu a span").mouseover(function(){
+		$(this).css({"background-color":"#FFFFFF","color":"#ff6600"});
+	  });
+	  
+	$(".menu a span").mouseout(function(){
+		$(this).css({"background-color":"","color":"#333333"});
+	  });
+	
+	});
+
+</script>
+
+</head>
+<body>
+
+<div id="container">
+<div id="user">
+	<div class="title">
+		<a href="#"><span>管理首页</span></a> | 
+		<a href="{:U('Admins/logout')}" target="_top"><span>注销登录</span></a></div>
+		<div class="menu" style="display:block;">
+			<span>用户名：{$admin.name}</span>
+			<span>权&nbsp;限：<php>getPrivilege($admin['id']);</php>
+			
+			</span>
+		</div>
+		<div id="end_of_menu"></div>
+
+
+</div>
+<div class="title"><span>网址管理</span></div>
+<div class="menu" style="display:block">
+
+	<a href="{:U('Site/adminSite')}" target="right"><span>网址管理</span></a>
+
+</div>
+<div class="title"><span>公告管理</span></div>
+<div class="menu" style="display:block">
+	<a href="admin_article.php?action=add" target="right"><span>添加公告</span></a>
+    <a href="admin_article.php?action=manage" target="right"><span>公告管理</span></a>
+
+
+</div>
+<div class="title"><span>用户管理</span></div>
+<div class="menu" style="display:block">
+	<a href="{:U('Admins/index')}" target="right"><span>管理员管理</span></a>
+    <a href="{:U('Admins/add')}" target="right"><span>管理员添加</span></a>
+</div>
+<div class="title"><span>反馈管理</span></div>
+<div class="menu" style="display:block">
+	<a href="{:U('Feedback/index')}" target="right"><span>反馈管理</span></a>
+</div>
+
+<div id="end_of_menu"></div>
+<div id="copyright" >
+
+<a href="http://www.quantacenter.org/" target="_blank"><span >技术支持：<img id="quanta_img" src="__IMG2__quanta.jpg" /></span></a>
+
+</div>
+
+</div><!--end of container-->
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>无标题文档</title>
+<link rel="stylesheet" type="text/css" href="__CSS2__/admin_feedback.css" />
+<link rel="stylesheet" type="text/css" href="__CSS2__/pagination.css" />
+<script src="__JS2__/jquery.js"></script>
+<script type="text/javascript">
+
+$(document).ready(function(){
+	site_url=$('#site_url').val();
+	
+	$('#selall').click(function(){
+		$('input[name="arcID"]').each(function(){	
+			$(this).attr('checked',true);
+		});
+	});
+	$('#noselall').click(function(){
+		$('input[name="arcID"]').each(function(){	
+			$(this).removeAttr('checked');
+		});
+	});
+	
+	$('#delall').click(function(){
+		var arr=[];
+		$('input[name="arcID"]:checkbox:checked').each(function(){	
+			arr.push($(this).val());
+		});
+		var all_id=arr.join('|');
+		if(all_id==''){
+			alert("未选择相关内容")
+		}
+		else{
+		   if(confirm("确认删除吗？")){
+			   $.ajax({
+					async: false,
+					type: 'post',
+					url: "{:U('Feedback/deleteMulty')}",
+					data: {'all_id': all_id},
+					success: function(result){
+						$('[name="arcID"]').removeAttr('checked');
+						window.location.reload();
+					}
+				});//end of ajax
+		   }
+		}
+	});
+});
+</script>
+</head>
+
+<body>
+
+<!--  内容列表   -->
+<input type="hidden" id="site_url" value="" />
+
+<table width="98%" border="0" cellpadding="2" cellspacing="1" bgcolor="#CFCFCF" align="center" style="margin-top:8px">
+
+<tr bgcolor="#E7E7E7" >
+
+	<td height="28" colspan="7" style="padding-left:10px;background:images/tbg.gif">
+
+	◆ 反馈管理&gt;反馈列表 &nbsp;
+
+	</td>
+
+</tr>
+
+<tr align="center" bgcolor="#FBFCE2" height="22">
+
+	<td width="6%">ID</td>
+	<td width="4%">选择</td>
+	<td width="72%">回馈内容</td>
+	<td width="8%">反馈时间</td>
+	<td width="10%">操作</td>
+
+</tr>
+<volist name="list" id="row">
+<tr align="center" bgcolor="#FFFFFF" height="22" align="center" onMouseMove="javascript:this.bgColor='#FCFDEE';" onMouseOut="javascript:this.bgColor='#FFFFFF';">
+	<td nowrap>{$row.id}</td>
+	<td>
+		<input name="arcID" type="checkbox" id="arcID" value="{$row.id}" class="np" />
+	</td>
+	<td align='left'>
+		<span id="arc114">
+			{$row.content}
+		</span>
+	</td>
+	<td class="time">{$row.feedbackTime}</td>
+	<td>
+		<a href="{:U('Feedback/deleteOne')}/id/{$row.id}" onclick='return confirm("确认删除吗？")'>
+		<img src="__IMG2__/delete.gif" title="删除" alt="删除" style='cursor:pointer' border='0' width='16' height='16' /></a>
+	</td>
+</tr>
+</volist>
+<tr bgcolor="#ffffff">
+
+<td height="36" colspan="7">
+	<a href="javascript:void(0)" id="selall" class="coolbg">全选</a>
+	<a href="javascript:void(0)" id="noselall" class="coolbg">取消</a>
+	<a href="javascript:void(0)" id="delall" class="coolbg">&nbsp;删除&nbsp;</a>
+
+</td>
+
+</tr>
+
+
+<tr align="right" bgcolor="#F9FCEF">
+
+	<td height="36" colspan="7"align="center">
+	{$page}
+	</td>
+
+</tr>
+
+</table>
+
+</body>
+
+</html>

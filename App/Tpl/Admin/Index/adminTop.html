@@ -1,0 +1,74 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>无标题文档</title>
+<link href="css/admin_left_blue.css" rel=stylesheet/>
+
+<style type=text/css>
+BODY {
+	font-family:"微软雅黑";
+	margin:0px;
+	padding:0px;
+     background-image:url(img/toolBar_top.jpg);
+}
+#table{
+float:left;
+margin-top:5px;
+font-size:11px;
+}
+#time{
+margin:15px 5px 0px 0px;
+padding-top:3px;
+float:right;
+font-size:12px;
+color:#666666;
+}
+</style>
+<script type="text/javascript">
+window.onload=startTime;
+function startTime(){
+var today=new Date()
+var h=today.getHours()
+var m=today.getMinutes()
+var s=today.getSeconds()
+// add a zero in front of numbers<10
+m=checkTime(m)
+s=checkTime(s)
+document.getElementById('change_time').innerHTML=h+":"+m+":"+s+":::::"
+t=setTimeout('startTime()',500)
+}
+
+function checkTime(i)
+{
+if (i<10) 
+  {i="0" + i}
+  return i
+}
+
+</script>
+
+</head>
+<body>
+<table id="table" cellSpacing="0" cellPadding="0" border=0>
+  <tbody>
+    <tr>
+      <td width="80" align="center"><img src="img/admin_top_icon_1.gif" /> </td>
+      <td>
+      <a href="user_ModifyPwd.php" target="main">修改密码</a> 
+       | <a href="admin_config.php" target="main">更新服务器缓存</a> 
+	   | <a href="../" target=_blank>网站首页</a>
+       |<a href="http://new.cnzz.com/v1/login.php?siteid=4189775" target="main">网站访问统计</a>&nbsp;&nbsp;
+       </td>
+       <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 系统网址总数：<i>$count[web_site]</i>&nbsp;&nbsp; &nbsp;&nbsp;</td>
+       <td> 用户总数：<i>$count[user]</i>&nbsp;&nbsp;&nbsp;&nbsp; </td>
+       <td> 用户网址总数：<i>$count[user_web_site]</i>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+    </tr>
+  </tbody>
+</table>
+
+<div id="time">
+	<span>:::::</span><span id="change_time"></span>
+</div>
+</body>
+</html>

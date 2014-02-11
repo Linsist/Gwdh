@@ -1,0 +1,819 @@
+<include file="Public:header" />
+<include file="template" />
+<script type="text/javascript" src="__JS__/jquery.dragsort-0.5.1.js"></script>
+<script type="text/javascript" src="__JS__/onmousewheel.js"></script>
+<!-- <script type="text/javascript" src="__JS__/pcsort.js"></script> -->
+<script type="text/javascript" src="__JS__/pcscroll.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    siteSquareMove();
+    controlSiteOver();
+    // controlAddSite();
+    $('#addpage').click(function(){
+        addPage();
+        // appendPage(4);
+    });
+    
+    
+    
+
+
+});
+
+function siteSquareMove(){
+    $(".pc_nomalwebsite").dragsort({ 
+        dragSelector: "a", 
+        dragBetween: true, 
+        dragSelectorExclude:'.pc_right_noweb',
+        container: window,
+        placeHolderTemplate: "<a ><div style='width:224px;height:140px;border: 2px dashed #333;'></div></a>" ,
+        dragEnd: function(){
+            // alert($(this).parent('.pc_nomalwebsite').attr('alt'));
+            saveOrder();
+        }
+        // scrollSpeed: 20,
+    });
+}
+function saveOrder(){
+    
+    // alert(1);
+    $('.pc_nomalwebsite').each(function(){
+        var ordersArr = [];
+        var site={};
+        $(this).find('.siteSquare').each(function(){
+            ordersArr.push($(this).attr('alt'));
+        });
+        site.orders = ordersArr.join('|');
+        site.pageNum = $(this).attr('alt');
+        doAjaxSaveOrder(site);
+    });
+}
+
+/**
+ * @param obj site = {pageNum,orders}
+ * @return boolean
+ */
+function doAjaxSaveOrder(site){
+    var bool = true;
+     $.ajax({
+        async:true,
+        type:'post',
+        url:'{:U("Usersite/saveOrder")}',
+        dataType:'json',
+        data:{'pageNum':site.pageNum, 'orders':site.orders},
+        success:function(msg){
+        }
+
+    });
+    return bool;
+}
+
+/**
+ * ajax 添加一页
+ *
+ */
+function addPage(){
+    var bool = true;
+    $.ajax({
+        async:false,
+        type:'post',
+        url:'{:U("Userpage/add")}',
+        dataType:'json',
+        data:{'submitted':'submitted'},
+        success:function(msg){
+            if (msg.status==1) {
+                appendPage(msg.data.pageNum);
+                bool = true;
+            }else{
+                bool = false;
+            }
+
+        }
+
+    });
+    return bool;
+}
+
+/**
+ * 生成一页，然后追加到最后一页的后面
+ */
+function appendPage(pageNum){
+    var page = $('.pc_nomalwebsite:first');
+    var newpage = page.clone();
+    var noWeb = $('#template .pc_right_noweb').clone();
+    noWeb.attr('alt',pageNum);
+    newpage.attr('alt',pageNum);
+    newpage.empty();
+    newpage.append(noWeb);
+    // newpage.children('a.siteSquare').remove();
+    $('#include_web').append(newpage);
+    $('.pc_right_noweb').unbind('click');
+    controlAddSite();
+    resetAllEvent();//给最后一页添加事件
+
+}
+
+/**
+ * 重新添加事件
+ * 避免事件重复，先移除再添加
+ */
+function resetAllEvent(){
+    $('.pc_nomalwebsite').dragsort('destroy');
+    siteSquareMove();
+    setIncludeWebWidth();
+    sideScroll();
+}
+
+
+
+
+
+
+
+/**
+ * 控制鼠标移到方块上，显示设置和删除
+ */
+function controlSiteOver(){
+    $('.siteSquare').mouseover(function(){
+        $(this).children('.pc_right_div2,.pc_right_span2').show();
+    }).mouseout(function(){
+        $(this).children('.pc_right_div2,.pc_right_span2').hide();
+    });
+ }
+
+
+
+</script>
+<div class="includeall" id="includeall">
+	<div class="wrapper_outer wrapper_pc_outer">
+        <div class="wrapper wrapper_pc">
+            <!--<div class="wrapper_logo">
+                <a href="#">
+                    <span class="wrapper_logo_txt">广外导航</span>
+                    <span>The Navigation Of GDUFS</span>
+                </a>
+            </div>-->
+            <div class="wrapper_logo">
+                <a href="{:U('Index/home')}">广外导航</a>
+            </div>
+            <div class="wrapper_private wrapper_pripc">
+                <a href="#">个人中心</a>
+            </div>
+            <div class="wrapper_login">
+                <ul>
+                    <li class="wrapper_a_img"><a href="#"></a></li>
+                    <li><a href="{:U('Accounts/index')}">{$Think.session.account.username}</a></li>
+                    <li class="wrapper_li_border"><a href="{:U('Accounts/logout')}">注销账号</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="content_outer">
+    	
+        <div class="pc_right">
+            <div class="search_div">
+                <input type="text" class="search_input" value="广外搜索/百度/谷歌" />
+                <span id="test1"></span>
+                <a class="search_btn1" href="#">站内搜索</a>
+                <a class="search_btn2" href="#">百度一下</a>
+                <a id="addpage" class="search_btn3" href="#">谷歌一下</a>
+            </div>
+            
+
+            <!-- -------------网址入口------------ -->
+            
+            <div id="leftBar"></div>
+            <div id="rightBar"></div>
+            <div id="include_web">
+            <volist name="vo" id="page">
+                <div class="pc_nomalwebsite" alt="{$page.pageNum}">
+                    <php>
+                        $map = array(
+                            'pageNum'=>$page['pageNum'],
+                            'uid'=>$_SESSION['account']['uid'],
+                        );
+                        $li = getList('Usersite',$map,'orders asc');
+                    </php>
+                    <volist name="li" id="site">
+                    	<a  class="siteSquare" href="{$site.url}" alt="{$site.id}" page="{$page.pageNum}">
+                        	<span class="pc_right_span1">
+                                <img src="__UPLOAD__/{$site.logo}"/>   
+                            </span>
+                            <div class="pc_right_div1"></div>
+                            <div class="pc_right_div2">
+                            	<span class="pc_right_aset">设置</span>
+                                <span class="pc_right_adel">删除</span>
+                            </div>
+                            <span class="pc_right_span2">{$site.title}</span>
+                        </a>
+                	</volist>
+
+                    <a href="#" alt="{$page.pageNum}" class="pc_right_noweb">
+
+                    </a>
+                </div>
+            </volist>
+                
+            </div>
+
+            
+            <div class="cl"></div>
+        </div>
+        <div class="footer footer2">
+            <ul>
+                <li class="footer_li_1"><a href="#">Copyright © 2012 Quanta（量子）信息技术服务中心</a></li>
+                <li class="footer_li_2">E-mail：<a href="#">daohang@quantacenter.org</a></li>
+                <li class="footer_li_3"><a href="#">@广外导航</a></li>
+                <li class="footer_li_4"><a href="#">关于QUANTA</a></li>
+                <li><a href="#">后台管理</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    addweb_ntabEvent();//云网址的类别切换，ajax获取内容
+    controlAddSite();//控制添加网址的一系列事件
+    addSiteByUser();//控制用户自定义添加网址
+    controlUpdateSite()//控制更新网址的一系列事件
+    searchSite();
+    checkSquareNum();//检查每一页网址的个数
+});
+/**
+ * 根据类别，获得该类别下的网址列表
+ * @param int typeId
+ * @return object
+ */
+function getSelectWebSite(typeId){
+    var squire = $('.example').children('a.selectSite').clone(true);
+    var logo = squire.find('img');
+    var title = squire.children('.addweb_right_txt');
+    var webbase_unit = $('.webbase_unit');
+    $.ajax({
+        async:false,
+        type:'post',
+        url:'{:U("Usersite/getSelectWebSite")}',
+        dataType:'json',
+        data:{'typeId':typeId,'submitted':'submitted'},
+        success:function(msg){
+            for (var i = 0; i < msg.length; i++) {
+                squire.attr('url',msg[i].site);
+                squire.attr('title',msg[i].name);
+                squire.attr('logo','webshot/' + msg[i].logo);
+                var logoName;
+                if (msg[i].logo==null) {
+                    logoName = '__UPLOAD__/default.jpg';
+                }else{
+                    logoName = '__UPLOAD__/webshot/'+msg[i].logo;
+                }
+                logo.attr('src',logoName);
+                title.text(msg[i].name);
+                webbase_unit.append(squire);
+            };
+        }
+    });
+
+    
+}
+
+/**
+ *给addweb_ntab 按类别选择 添加事件，
+ *云网址选择框的tab
+ */
+function addweb_ntabEvent(){
+    var tab = $('#addweb_ntab').children('a');
+    var typeId;
+    tab.click(function(){
+        tab.removeClass('addweb_ntbchosen');
+        $(this).addClass('addweb_ntbchosen');
+        typeId = $(this).attr('alt');
+        var webbase_unit = $('.webbase_unit a');
+        webbase_unit.remove();
+        getSelectWebSite(typeId);
+        
+    });
+}
+
+/**
+ * 添加网址的控制，
+ * 打开供选网址框，记录pageNum，
+ * 生成节点，插入到当前页面去
+ */
+function controlAddSite(){
+    var pageNum;//从哪一页添加的
+
+    $('.pc_right_noweb').click(function(){
+        pageNum = $(this).attr('alt');
+        addSiteFromCloud();
+        addSiteFromUser();
+        $('#addwebsite_div').show();
+    });
+
+    //用来关闭弹出框
+    $('.menu #close').click(function(){
+        $('#addwebsite_div').hide();
+        // closecover();
+        $('.selectSite,#confirm').unbind('click');
+    });
+
+    //添加网网址之后，用来控制弹出框的关闭
+    var _afterAdd = function(site){
+        var newSite = createSqureNode(site);
+        var contain = $('.pc_nomalwebsite[alt="'+site.pageNum+'"]');
+        contain.children('.pc_right_noweb').before(newSite);
+
+        // if (contain.children('.siteSquare').length>=8) {
+        //     contain.children('a.pc_right_noweb').remove();
+        // };
+        checkSquareNum();
+        $('#addwebsite_div').hide();
+        $('.selectSite,#confirm').unbind('click');
+        resetAllEvent();
+    }
+
+    //从云网址库中添加
+    var addSiteFromCloud = function(){
+        $('.selectSite').click(function(){ 
+            var url = $(this).attr('url');
+            var title = $(this).children('.addweb_right_txt').text();
+            var title = $(this).attr('title');
+            var logo = $(this).attr('logo');
+            var site = {
+                pageNum: pageNum,
+                url: url,
+                title: title,
+                logo: logo,
+            }
+            if (!checkSiteUrl(site.url) || !checkSiteTitle(site.title)) {
+                return false;
+            }
+            site = doAddSite(site);
+            _afterAdd(site);
+          
+        });
+    }
+
+
+    //用户自定义添加网址
+    var addSiteFromUser = function(){
+        $('#confirm').click(function(){
+            var site = {};
+            site.pageNum = pageNum;
+            site.url = $('.url').val();
+            site.title = $('.title').val();
+            site.logo = $('img.logo').attr('logo');
+            if (!checkSiteUrl(site.url) || !checkSiteTitle(site.title)) {
+                return false;
+            }
+            site = doAddSite(site);
+            _afterAdd(site);
+        });
+
+    }
+}
+
+
+/**
+ * 创建一个siteSquare方块
+ * @param obj site{title,url,logo}
+ * @return jquery obj
+ */
+function createSqureNode(site){
+    var template = $('#siteTemplate').children('a.siteSquare');
+    var a = template.clone(true);
+    a.attr('href',site.url);//设置url
+    a.attr('alt',site.id);
+    a.attr('page',site.pageNum);
+    a.find('img').attr('src','__UPLOAD__/'+site.logo);
+    
+    a.children('.pc_right_span2').text(site.title);//设置标题
+    // a.children('.pc_right_span1').css({background:'green'});//设置背景
+    return a;
+}
+
+/**
+ * 在网址库找不到的情况下
+ * 用户自定义添加网址
+ */
+function addSiteByUser(){
+    $('#cloud_web').click(function(){
+        $('#add_cloud_web').show();
+        $('#add_user_define').hide();
+    });
+    $('#user_define').click(function(){
+        $('#add_cloud_web').hide();
+        $('#add_user_define').show()
+
+    });
+
+}
+
+
+/**
+ * ajax添加网址，插入数据库
+ * @param obj site = {title,url,logo}
+ * @return mixed 成功则返回插入的id，失败则返回false
+ */
+function doAddSite(site){
+    var returnId;
+    $.ajax({
+        async:false,
+        type:'post',
+        url:'{:U("Usersite/add")}',
+        dataType:'json',
+        data:{'title':site.title, 'url':site.url, 'logo':site.logo,'pageNum':site.pageNum, 'submitted':'submitted'},
+        success:function(msg){
+            if (msg.status==1) {
+                returnId = msg.data;
+            }else{
+                returnId = false;
+            }
+        }
+    });
+    return returnId;
+}
+
+/**
+ * 控制更新网址
+ *
+ */
+function controlUpdateSite(){
+    //更新网址的弹出
+    $('.pc_right_aset').click(function(e){
+        e.preventDefault();//阻止事件的冒泡
+        var site = {};
+        site.id = $(this).parents('a.siteSquare').attr('alt');
+        alert(site.id);
+    });
+
+    //删除网址
+    $('.pc_right_adel').click(function(e){
+        e.preventDefault();//阻止事件的冒泡 
+        var parent = $(this).parents('a.siteSquare');  
+        var id = parent.attr('alt');
+
+        deleteSquare(id,function(msg){
+            if (msg.status == 1) {
+                parent.remove();
+            }else{
+                alert('删除失败');
+            }
+        });
+        
+        checkSquareNum();//检查删除之后还有多少个网址
+    });
+
+    //添加这个事件是为了让删除按钮更灵敏
+    $('.pc_right_adel').mouseover(function(){
+        $('.pc_nomalwebsite').dragsort('destroy');
+    }).mouseout(function(){
+        resetAllEvent();
+    });
+
+}
+
+/**
+ * 删除网址
+ * @param int id
+ * @param function callback
+ */
+function deleteSquare(id,callback){
+    $.ajax({
+        async:false,
+        type:'post',
+        url:'{:U("Usersite/del")}',
+        dataType:'json',
+        data:{'id':id},
+        success: function(msg){
+            callback(msg);
+        }
+    });
+}
+
+/**
+ * 检查square的个数，如果大于8个就隐藏添加框
+ */
+function checkSquareNum(){
+    var contain = $('.pc_nomalwebsite');
+    contain.each(function(){
+        var site = $(this).find('a.siteSquare');
+        if (site.length >= 8 ) {
+            $(this).find('a.pc_right_noweb').hide();
+        }else{
+            $(this).find('a.pc_right_noweb').show();
+        }
+    });
+}
+
+
+/**
+ * 控制云网址搜索的
+ */
+function searchSite(){
+    $('#search_btn').click(function(){
+        var key = $('#search_input').val();
+        getSite(key);
+        return false;//阻止表单提交
+    });
+
+    //ajax获取搜索的结果，并显示出来
+    var getSite = function(key){
+        var squire = $('.example').children('a.selectSite').clone(true);
+        var logo = squire.find('img');
+        var title = squire.children('.addweb_right_txt');
+        var webbase_unit = $('.webbase_unit');
+        $.ajax({
+            async:false,
+            type:'post',
+            url:'{:U("Usersite/searchSite")}',
+            dataType:'json',
+            data: {'key':key},
+            success: function(msg){
+                if (msg!=='') {
+                    webbase_unit.empty();
+                    for (var i = 0; i < msg.length; i++) {
+                        squire.attr('url',msg[i].site);
+                        squire.attr('title',msg[i].name);
+                        squire.attr('logo','webshot/' + msg[i].logo);
+                        var logoName;
+                        if (msg[i].logo==null) {
+                            logoName = '__UPLOAD__/default.jpg';
+                        }else{
+                            logoName = '__UPLOAD__/webshot/'+msg[i].logo;
+                        }
+                        logo.attr('src',logoName);
+                        title.text(msg[i].name);
+                        webbase_unit.append(squire);
+                    };
+               }   
+                
+            }
+        });
+    }
+
+}
+
+
+
+
+</script>
+<!-- 增加网址的时候用来clone的模板 -->
+<div id="siteTemplate" style="display:none">
+    <a  class="siteSquare" href="http://www.baidu.com" alt="1">
+        <span class="pc_right_span1">
+            <img src="__UPLOAD__/webshot/">
+        </span>
+        <div class="pc_right_div1"></div>
+        <div class="pc_right_div2">
+            <span class="pc_right_aset">设置</span>
+            <span class="pc_right_adel">删除</span>
+        </div>
+        <span class="pc_right_span2">123</span>
+    </a>
+</div>
+
+<!-- -------------供选网址列表------------ -->
+<div class="addwebsite_div" id="addwebsite_div">
+	<div class="addweb_search">
+    	<!-- <div class="addweb_searchinput">
+        	<input id="search_input" type="text" />
+            <a id="pop_alert_div" title="自定义添加" href="#">自定义添加</a>
+            <a id="search_btn" href="#">搜索</a>
+        </div> -->
+        <div class="menu">
+            <a href="#" id="cloud_web" class="menu_tab">云网址</a>
+            <a href="#" id="user_define" class="menu_tab">自定义</a>
+            <a href="#" id="close">关闭</a>
+        </div>
+        <div class="addweb_searchback">
+        	<div class="add_backleft"></div>
+            <div class="add_backmid"></div>
+            <div class="add_backright"></div>
+        </div>
+        
+    </div>
+    <div id="add_cloud_web">
+        <div id="addweb_ntab" class="addweb_ntab">
+        	<a href="#" class="addweb_ntbchosen" alt="1">热门</a>
+            <a href="#" alt="2">视频</a>
+            <a href="#" alt="3">音乐</a>
+            <a href="#" alt="4">购物</a>
+            <a href="#" alt="18">新闻</a>
+            <a href="#">社区</a>
+            <a href="#">更多</a>
+        </div>
+
+        <div id="addweb_right" class="addweb_right">
+        	<div class="addweb_searchinput">
+                <form>
+                <input id="search_input" type="text" />
+                <input type="submit" id="search_btn"  />
+                </form>
+            </div>
+        	<div class="webbase_unit">
+                <a href="#" class="selectSite" title="淘宝" logo="baidu.com" url="http://www.taobao.com">
+                    <span class="addweb_right_back">
+                        <img src="__UPLOAD__/webshot/www.taobao.com.png" width="160px"/>
+                    </span>
+                    <span class="addweb_right_txt">淘宝</span>
+            	</a>
+            </div>
+
+            <!-- 用来复制的 -->
+           <div class="webase_unit example"  style="display:none">   
+                <a href="#" class="selectSite" title="淘宝" logo="taobao.com" url="http://www.taobao.com">
+                    <span class="addweb_right_back">
+                        <img src="" width="160px" heigt="97px"/>
+                    </span>
+                    <span class="addweb_right_txt">淘宝</span>
+                </a>
+            </div>
+            <div id="search_board" class="webbase_unit"></div>
+        </div>
+    </div>
+    <div id="add_user_define">
+        <div class="left">
+            <p>
+                <label>网址:</label>
+                <input type="text" class="url"/> 
+                <span class="tips1"></span> 
+            </p>           
+            <p>
+                <label>标题:</label>
+                <input type="text" class="title"/><br/>
+                <span class="tips2"></span>
+            </p>
+            <p class="sub_menu">
+                <a href="#" id="confirm">确定</>
+                <a href="#" id="concel">取消</>
+                <a href="#" id="getWebshot">获取网页截图</>
+            </p>
+        </div>
+        <div class="right">
+            <div class="display-logo">
+                <img class="logo" logo="webshot/www.taobao.com.png" src="__UPLOAD__/webshot/www.taobao.com.png" width="160px" heigt="97px;">
+            </div>
+        </div>
+        <div class="bottom">
+            <img logo="webshot/www.taobao.com.png" src="__UPLOAD__/webshot/www.taobao.com.png"/>
+            <img logo="webshot/www.watergw.cn.png" src="__UPLOAD__/webshot/www.watergw.cn.png"/>
+            <img logo="webshot/tl.gdufs.edu.cn.png" src="__UPLOAD__/webshot/tl.gdufs.edu.cn.png"/>
+            <img logo="webshot/www.suidaokou.com.png" src="__UPLOAD__/webshot/www.suidaokou.com.png"/>
+            <img logo="webshot/www.dangdang.com.png" src="__UPLOAD__/webshot/www.dangdang.com.png"/>
+            <img logo="webshot/www.taobao.com.png" src="__UPLOAD__/webshot/www.taobao.com.png"/>
+        </div>
+    </div><!-- end of add_user_define -->
+</div>
+<script type="text/javascript">
+$(document).ready(function() {
+    //自定义站点url检查事件
+    $('.url').blur(function(){
+        var url = $(this).val();
+        if (checkSiteUrl(url)) {
+            var site = getSiteByUrl(url);
+            if (site) {
+                $('.title').val(site[0].name);
+                $('.logo').attr('src','__UPLOAD__/webshot/'+site[0].logo);
+                $('.logo').attr('logo','webshot/'+site[0].logo);
+            }else{
+
+            }
+            return true;
+        }else{
+            return false;
+        }
+    });
+
+    //自定义站点title事件监听
+    $('.title').blur(function(){
+        var title = $(this).val();
+        return checkSiteTitle(title);
+    });
+
+    //选择官方提供的网址截图
+    $('.bottom img').click(function(){
+        // $('.display-logo').empty();
+        var thea = $('img.logo');
+        var logo = $(this).attr('logo');
+        var src = $(this).attr('src');
+        thea.attr({'logo':logo, 'src':src});
+        // $('.display-logo').append(thea);
+    });
+
+    //获取网页截图
+    $('#getWebshot').click(function(){
+        var logo;
+        var url = $('input.url').val();
+        var parten = /^((https?|ftp|news):\/\/){1}/;
+        if (!parten.test(url)) {
+            url = 'http://'+url;
+        }
+        webshot(url,function(logo){
+            $('img.logo').attr({
+                'logo':'webshot/'+ logo,
+                'src':'__UPLOAD__/webshot/'+logo,
+            });
+        });
+    });
+
+});
+
+
+function checkSiteUrl(url){
+    var bool = false;
+    $.ajax({
+        async: false,
+        type:'post',
+        url: '{:U("Usersite/ajaxCheck")}',
+        dataType:'json',
+        data:{'url':url},
+        success:function(msg){
+            if (msg.status==1) {
+                bool = true;
+                $('.tips1').html('');
+            }else{
+                bool = false;
+                $('.tips1').html(msg.info);
+            }
+        }
+    });
+    return bool;
+}
+
+function checkSiteTitle(title){
+    var bool = false;
+    $.ajax({
+        async: false,
+        type:'post',
+        url: '{:U("Usersite/ajaxCheck")}',
+        dataType:'json',
+        data:{'title':title},
+        success:function(msg){
+            if (msg.status==1) {
+                bool = true;
+                $('.tips2').html('');
+            }else{
+                bool = false;
+                $('.tips2').html(msg.info);
+            }
+        }
+    });
+    return bool;
+}
+
+/**
+ * @param string url
+ * @return json
+ */
+function getSiteByUrl(url){
+    var site;
+    $.ajax({
+        async: false,
+        type:'post',
+        url: '{:U("Usersite/getSiteByUrl")}',
+        dataType:'json',
+        data:{'url':url},
+        success:function(msg){
+            if (msg.status==1) {
+                site = msg.data;
+            }else{
+                site = false;
+            }
+        }
+    });
+    return site;
+}
+
+/**
+ * @param string url
+ * @return String 截图名字
+ */
+function webshot(url,callback){
+    $.ajax({
+        // xhr: null,
+        async: true,
+        type:'post',
+        url: '{:U("Usersite/ajaxWebshot")}',
+        dataType:'json',
+        data:{'url':url},
+        timeout: 30000,
+        success:function(msg){
+            callback(msg);
+        },
+        error: function(xhr,msg,exception){
+            alert(msg);
+            xhr.abort();
+        }
+
+    });
+}
+
+</script>
+
+
+<div class="coverdiv" id="coverdiv">
+</div>
+
+<include file="Public:footer" />

@@ -1,0 +1,1 @@
+把改目录放到gwdh/app/public里面

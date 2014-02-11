@@ -1,0 +1,1 @@
+{"0":"typeId","1":"siteType","_autoinc":true,"_pk":"typeId","_type":{"typeId":"int(11)","siteType":"varchar(30)"}}

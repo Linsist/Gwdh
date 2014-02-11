@@ -1,0 +1,85 @@
+/* CSS Document */
+BODY {
+	font-family:"Î¢ÈíÑÅºÚ";
+	background-color:#E6E6E6;
+
+}
+
+a {
+	TEXT-DECORATION: none;
+	color:#333333;
+}
+a:hover {
+	COLOR: #ff6600; TEXT-DECORATION: underline;
+}
+
+#container{
+float:left;
+}
+
+.title{
+	width:150px;
+	cursor:n-resize;
+	background:url(../Images/toolBar_blue.jpg);
+	padding:2px 0px 2px 12px;
+	border-bottom-color:#0099CC;
+    border-bottom-style:solid;
+    border-bottom-width:thin;
+	
+}
+.title span
+{
+font-weight:600;
+font-size:12px;
+color:#233234;
+font-family:"Î¢ÈíÑÅºÚ";
+}
+.menu{
+width:160px;
+padding:2px 0px 2px 0px;
+background:#EAEAEA;
+display:none;
+border-color:#CCCCCC;
+border-left-style:solid;
+border-right-style:solid;
+border-width:1px;
+}
+
+.menu span{
+height:20px;
+font-size: 12px;
+color:#333333; 
+display:block;
+padding-left:20px;
+}
+
+#end_of_menu{
+width:160px;
+height:4px;
+margin-bottom:20px;
+background:#EAEAEA;
+border-color:#CCCCCC;
+border-style:solid;
+border-width:1px;
+border-top-style:none;
+}
+
+#copyright{
+width:140px;
+font-size: 12px;
+color:#333333; 
+padding:4px 0px 4px 20px;
+background:#EAEAEA;
+border-color:#CCCCCC;
+border-width:1px;
+border-style:solid;
+}
+
+#quanta_img{
+width:50px;
+vertical-align:middle;
+margin-left:4px;
+border-color:#CCCCCC;
+border-width:1px;
+border-style:solid;
+}

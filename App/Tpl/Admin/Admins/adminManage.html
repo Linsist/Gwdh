@@ -1,0 +1,125 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>广外导航后台登陆</title>
+<link rel="stylesheet" type="text/css" href="__CSS2__/admin_admin.css" />
+<link rel="stylesheet" type="text/css" href="__CSS2__/pagination.css" />
+<script src="__JS2__/jquery.js"></script>
+<script type="text/javascript">
+var site_url;
+
+$(document).ready(function(){
+	site_url=$('#site_url').val();
+	
+	$('#selall').click(function(){
+		$('input[name="arcID"]').each(function(){	
+			$(this).attr('checked',true);
+		});
+	});
+	$('#noselall').click(function(){
+		$('input[name="arcID"]').each(function(){	
+			$(this).removeAttr('checked');
+		});
+	});
+	
+	$('#delall').click(function(){
+		var arr=[];
+		$('input[name="arcID"]:checkbox:checked').each(function(){	
+			arr.push($(this).val());
+		});
+		var all_id=arr.join('|');
+		if(all_id==''){
+			alert("未选择相关内容")
+		}else{
+			if(confirm("确认删除吗？")){
+				$.ajax({
+					async: false,
+					type: 'post',
+					url: "{:U('Admins/deleteMulty')}",
+					data: {'all_id': all_id},
+					success: function(result){
+						//alert(result);
+						$('[name="arcID"]').removeAttr('checked');
+						window.location.reload();
+					}
+				});//end of ajax
+			}
+		}//end of else
+	});
+
+
+	
+	
+});
+</script>
+</head>
+<body>
+
+<!--  内容列表   -->
+
+<table width="98%" border="0" cellpadding="2" cellspacing="1" bgcolor="#CFCFCF" align="center" style="margin-top:8px">
+<tr bgcolor="#E7E7E7" >
+	<td height="28" colspan="8"  style="padding-left:10px;background="images/tbg.gif"">
+	◆ 管理员界面&gt;管理员列表 &nbsp;
+	</td>
+</tr>
+
+<tr align="center" bgcolor="#FBFCE2" height="22">
+
+	<td width="6%">ID</td>
+	<td width="6%">选择</td>
+    <td width="10%">姓名</td>
+	<td width="20%">权限</td>
+	<td width="6%">登录次数</td>
+	<td width="20%">最近登录</td>
+    <td width="20%">最近ip</td>
+	<td width="10%">操作</td>
+
+</tr>
+
+
+<volist name="list" id="row">
+<tr align="center" bgcolor="#FFFFFF" height="22" align="center" onMouseMove="javascript:this.bgColor='#FCFDEE';" onMouseOut="javascript:this.bgColor='#FFFFFF';">
+	<td nowrap>{$row.id}</td>
+	<td>
+		<input name="arcID" type="checkbox" id="arcID" value="{$row.id}" class="np" />
+	</td>	
+    <td>{$row.name}</td>
+	<td align="center">
+		<span id="arc114">
+			<php>getPrivilege($row['id']);</php>
+		</span></td>
+    <td>{$row.loginTimes}</td>
+	<td class="time">{$row.lastLogin}</td>
+    <td>{$row.ip}</td>
+	<td>
+		<a href="#">
+		<img src='__IMG2__/gtk-edit.png' title="编辑" alt="编辑"  style='cursor:pointer' border='0' width='16' height='16' /></a>
+		<a href="{:U('Admins/deleteOne')}/id/{$row.id}" onclick='return confirm("确认删除吗？")'>
+		<img src="__IMG2__/delete.gif" title="删除" alt="删除" style='cursor:pointer' border='0' width='16' height='16' /></a>
+	</td>
+</tr>
+</volist>
+
+
+<tr bgcolor="#ffffff">
+	<td height="36" colspan="8">
+		&nbsp;	
+		<a href="javascript:void(0)" id="selall" class="coolbg">全选</a>
+		<a href="javascript:void(0)" id="noselall" class="coolbg">取消</a>
+		<a href="javascript:void(0)" id="delall" class="coolbg">&nbsp;删除&nbsp;</a>
+	</td>
+</tr>
+<tr align="right" bgcolor="#F9FCEF">
+	<td height="36" colspan="8"align="center">
+		{$page}
+	</td>
+</tr>
+
+</table>
+
+
+
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta property="qc:admins" content="471740467767516771141701676375" />
+
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>广外导航后台登陆</title>
+<link rel="stylesheet" type="text/css" href="__CSS2__/login.css" />
+<script src="__JS2__/jquery.js"></script>
+<link rel="shortcut icon" href="/favicon.ico"/>
+<script type="text/javascript">
+var site_url;
+$(document).ready(function(){
+	site_url=$('#site_url').val();
+	function isPassword(name,password){
+		var bool;
+        $.ajax({
+			async: false,
+			type: 'post',
+			url: "{:U('Admins/checkPassword')}",
+			data: {'name': name, 'password': password},
+			success: function(data) {
+				var msg=$.parseJSON(data);
+				if (msg.status==1) {
+					bool=true;
+				} else {
+					bool=false;
+				}
+			}	
+		});
+		return bool;			
+	}
+	function iscaptcha(captcha){		
+		var bool;
+        $.ajax({
+			async: false,
+			type: 'post',
+			url: "{:U('Admins/checkCaptcha')}",
+			data: {'captcha': captcha},
+			success: function(result) {	
+				var msg = $.parseJSON(result);
+				if(msg.status==1){
+					$('#login-error').html('');
+					bool = true;
+				}else{
+					$('#login-error').html('验证码不正确');
+					bool = false;
+				}
+			}	
+		});
+		return bool;	
+	}
+	function check_password(){		
+		var name=$('[name="name"]').val();
+		var password=$('[name="password"]').val();
+        // 检查密码的合法性
+        if (!isPassword(name, password)) {
+            $('#login-error').html('用户名或密码不正确！');
+            return false;
+        } else {
+            return true;
+        }
+	}
+	function check_captcha(){
+		var captcha=$('input[name="captcha"]').val();
+		if(captcha==''){
+			$('#login-error').html('请输入验证码');
+			return false;
+		}else if(!iscaptcha(captcha)){
+			return false;
+		}else{
+			return true;
+		}
+	}
+	
+	$('[name="commit"]').click(function(){		
+		if(check_password() && check_captcha()){
+			$('#login-form').submit();
+		}
+		
+	});
+
+	
+});
+</script>
+</head>
+<body>
+<form id="login-form" action="{:U('Index/adminLogin')}" method="post">
+  <fieldset>
+  <legend>登陆</legend>
+  <label for="login">用户名</label>
+  <input type="text" id="login" name="name"/>
+  <div class="clear"></div>
+  <label for="password">密&nbsp;&nbsp;&nbsp;码</label>
+  <input type="password" id="password" name="password"/>
+  <label for="check_word">验证码</label>
+  <input type="text" id="check_input" name="captcha"/>
+  <input type="hidden" name="login" value="1" />
+  <img id="check_img" src="{:U('Admins/captcha')}" onclick='this.src=this.src+"/"+Math.random()' />
+  <div class="clear"></div>
+  <div class="clear"></div>
+  <br />
+  <input type="hidden" name="submitted" value="submitted" />
+  <input type="button" style="margin: -20px 0 0 287px;" class="button" name="commit" value="登录"/>
+  <p id="login-error" style="color:red; font-size:12px;margin: -20px 0 0 65px;"></p>
+ 
+  </fieldset>
+</form>
+</body>
+</html>

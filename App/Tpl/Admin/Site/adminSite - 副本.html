@@ -1,0 +1,591 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>广外导航</title>
+<link rel="stylesheet" href="__JS2__/development-bundle/themes/base/jquery.ui.all.css"/>
+<link rel="stylesheet" href="__CSS2__/demos.css"/>
+<link rel="stylesheet" href="__CSS2__/backtotop.css"/>
+<link rel="stylesheet" href="__CSS2__/admin_website.css"/>
+
+<script src="__JS2__/jquery-1.8.0.min.js"></script>
+<script src="__JS2__/jquery-ui-1.8.23.custom.min.js"></script>
+
+<link rel="stylesheet" href="__KIND__/themes/default/default.css" />
+<link rel="stylesheet" href="__KIND__/plugins/code/prettify.css" />
+<script charset="utf-8" src="__KIND__/kindeditor.js"></script>
+<script charset="utf-8" src="__KIND__/lang/zh_CN.js"></script>
+<script charset="utf-8" src="__KIND__/plugins/code/prettify.js"></script>
+<script>
+var editor1;
+var editor2;
+KindEditor.ready(function(K) {
+	editor1 = K.create('#add_info', {
+		cssPath : '__KIND__/plugins/code/prettify.css',
+		items:['source',  'preview', '|', 'justifyleft', 'justifycenter', 'justifyright',
+        'justifyfull',  'indent', 'outdent','formatblock', 'fontname', 'fontsize', '|', 'forecolor', 'hilitecolor', 'bold',],
+	});
+	editor2 = K.create('#site_info', {
+		cssPath : '__KIND__/plugins/code/prettify.css',
+		items:['source',  'preview', '|', 'justifyleft', 'justifycenter', 'justifyright',
+        'justifyfull',  'indent', 'outdent','formatblock', 'fontname', 'fontsize', '|', 'forecolor', 'hilitecolor', 'bold',],
+	});
+	prettyPrint();
+});
+</script>
+<script type="text/javascript">
+var type_id;//全局变量
+var id;
+var site_url;
+
+function check_add_reset(name,site)
+{	
+	//检查名字
+	if(name =='')
+	{
+		alert('请填写网址名字！！'); 
+		return false;
+	}
+	if(site =='')
+	{ 
+		return true;
+	}
+	//检查网址
+	var patten = /^((https?|ftp|news):\/\/)?([^\s"<>\.\*]+)(\.[^\s"<>\.\*]+)+$/; //为了扩大限制而设置的
+	var  rs = patten.exec(site);
+	if ( rs == null)
+	{
+		alert('网址格式有误！！');
+		return false;
+	}
+	return true;
+}
+
+
+$(function(){
+	$( "#type-confirm" ).dialog({
+		resizable: false,
+		autoOpen: false,
+		show: "blind",
+		hide:"explode",
+		height:200,
+		width:400,
+		modal: true,
+		buttons: {
+			'确认添加':function(){
+				var web_type=$('#add_type').val();
+				web_type = web_type.replace(/^\s+|\s+$/g,"");//去空格
+				if(web_type==''){
+					 alert('请填写类别的名字');
+					 return false;
+				}
+				return_id=$.ajax({
+					type:"post",
+					async:false,
+					url:site_url+"/admin_website/add_type",
+					data:{'web_type':web_type}
+				});
+				if(return_id.responseText == 'false')
+				{
+					alert('出错了，请稍后重试！');	
+					return false;
+				}
+			
+				$( this ).dialog( "close" );
+				window.location.reload();
+			},
+			'取消':function(){
+				$( this ).dialog( "close" );
+			}
+		}
+	});
+});
+
+$(function(){
+	$( "#type-reset-confirm" ).dialog({
+		resizable: false,
+		autoOpen: false,
+		show: "blind",
+		hide:"explode",
+		height:200,
+		width:400,
+		modal: true,
+		buttons: {
+			'确认修改':function(){
+				var web_type=$('#type_name').val();
+				web_type = web_type.replace(/^\s+|\s+$/g,"");//去空格
+				if(web_type==''){
+					 alert('请填写类别的名字');
+					 return false;
+				}
+				return_id=$.ajax({
+					type:"post",
+					async:false,
+					url:site_url+"/admin_website/reset_type",
+					data:{'web_type':web_type,'type_id':type_id}
+				});
+				if(return_id.responseText == 'false')
+				{
+					alert('出错了，请稍后重试！');	
+					return false;
+				}
+				//alert(return_id.responseText);
+				$(".name"+type_id).html(web_type);
+				$(".site_container[alt="+type_id+"] .site_title").html(type_id+'/'+web_type);
+			
+				$( this ).dialog( "close" );
+			},
+			'取消':function(){
+				$( this ).dialog( "close" );
+			},
+			'删除':function(){
+				if(!confirm('确定删除？'))
+				{
+					return false;
+				}
+				return_id=$.ajax({
+					type:"post",
+					async:false,
+					url:site_url+"/admin_website/del_type",
+					data:{'type_id':type_id}
+				});
+				if(return_id.responseText == 'false')
+				{
+					alert('删除失败，请稍后重试！');	
+					return false;
+				}
+				$(".each_type_item[alt="+type_id+"]").remove();
+				$(".site_container[alt="+type_id+"]").remove();
+				$( this ).dialog( "close" );
+			}
+		}//end of button
+	});
+});
+
+
+
+/******顺序拖动******/
+$(function() {
+		$( ".connectedSortable" ).sortable({
+		connectWith: ".connectedSortable",
+		placeholder: "ui-state-highlight"
+	}).disableSelection();
+	
+});
+
+/***排序的对话框   ***/
+$(function(){
+	$( "#order-confirm" ).dialog({
+		resizable: false,
+		autoOpen: false,
+		show: "blind",
+		hide:"explode",
+		height:200,
+		width:400,
+		modal: true,
+		buttons: {
+			'确认修改':function(){
+				var old_order=[];
+				$('.site_content[alt='+type_id+'] .ui-state-default').each(function(){
+					old_order.push($(this).attr('alt'));
+				});
+				var orders=old_order.join('|');
+				return_id=$.ajax({
+					type:"post",
+					async:false,
+					url:site_url+"/admin_website/reset_order",
+					data:{'orders':orders}
+				});
+				//alert(return_id.responseText);
+				if(return_id.responseText == 'false')
+				{
+					alert('出错了，请稍后重试！');	
+					return false;
+				}
+				$( this ).dialog( "close" );
+			},
+			'取消':function(){
+				$( this ).dialog( "close" );
+			}
+		}//end of button
+	});
+});
+
+$(function(){
+	$( "#add-confirm" ).dialog({
+		resizable: false,
+		autoOpen: false,
+		show: "blind",
+		hide:"explode",
+		height:400,
+		width:600,
+		modal: true,
+		buttons: {
+			'确认添加':function(){
+				var name=$('#add_name').val();
+				var site=$('#add_site').val();
+				editor1.sync();
+				var info=$('#add_info').val();
+
+				if(!check_add_reset(name,site))
+				{
+					return false;
+				}
+				return_id=$.ajax({
+					type:"post",
+					async:false,
+					url:site_url+"/admin_website/add_site",
+					data:{'name':name,'site':site,'info':info,'type':type_id}
+				});
+				if(return_id.responseText == 'false')
+				{
+					alert('出错了，请稍后重试！');	
+					return false;
+				}
+				var li_add =  "<li class=\"ui-state-default\" alt="+return_id.responseText+" title="+site+">"+name+"</li>";
+				$(".site_content[alt="+type_id+"] .connectedSortable").append(li_add);
+
+				$('#add_name').attr('value','');
+				$('#add_site').attr('value','');
+				editor1.html('');
+				
+				$('.ui-state-default').dblclick(function(){
+					id=$(this).attr('alt');//初始化id
+					$.ajax({
+						type:"post",
+						async:false,
+						dataType:'json',
+						url:"admin_website/show_one_site",
+						data:{'id':id},
+						success:function(r){
+							$("#site_name").attr("value",r.name);
+							$("#site").attr("value",r.site);				
+							editor2.html(r.info);
+						}
+					});
+					$('#reset-confirm').dialog("open");
+				});
+				
+				$( this ).dialog( "close" );
+				
+			},
+			'取消':function(){
+				$( this ).dialog( "close" );
+			}
+		}
+	});
+});
+/*-----------网址的reset------------*/
+$(function() {
+	$( "#reset-confirm" ).dialog({
+		resizable: false,
+		autoOpen: false,
+		show: "blind",
+		hide:"explode",
+		height:400,
+		width:600,
+		modal: true,
+		buttons: {
+			"确认修改": function() {
+				var name=$('#site_name').val();
+				var site=$('#site').val();
+				editor2.sync();
+				var info=$('#site_info').val();
+				if(!check_add_reset(name,site))
+				{
+					return false;
+				}
+				return_id=$.ajax({
+					type:"post",
+					async:false,
+					url:site_url+"/admin_website/reset_site",
+					data:{'name':name,'site':site,'info':info,'id':id}
+				});
+				if(return_id.responseText == 'false')
+				{
+					alert('出错了，请稍后重试！');	
+					return false;
+				}
+				$(".ui-state-default[alt="+id+"]").html($("#site_name").attr("value"));
+				$(".ui-state-default[alt="+id+"]").attr("title",$("#site").attr("value"));
+				$( this ).dialog( "close" );
+
+			},
+			"取消": function() {
+				$( this ).dialog( "close" );
+				id = 0;
+			},
+			"删除": function() {
+				if(!confirm('确定删除？'))
+				{
+					return false;
+				}
+				return_id=$.ajax({
+					type:"post",
+					async:false,
+					url:site_url+"/admin_website/del_site",
+					data:{'id':id}
+				});
+				if(return_id.responseText == 'false')
+				{
+					alert('出错了，请稍后重试！');	
+					return false;
+				}
+				$(".ui-state-default[alt="+id+"]").remove();
+				$( this ).dialog( "close" );
+				
+			}
+		}
+	});
+});
+
+/****-------上面是网址的管理-------------------------------------****/
+
+$(document).ready(function(){
+	site_url=$('#site_url').val();
+	$('#open_add_type').click(function(){
+		$('#type-confirm').dialog("open");
+	});
+	
+	$('.each_type_item').dblclick(function(){
+		type_id=$(this).attr('alt');
+		var m_type_name=$(this).find('a:last').text();
+		$('#type_name').val($.trim(m_type_name));
+		$('#type-reset-confirm').dialog("open");
+	});
+	
+	$('.add').click(function(){
+		type_id=$(this).attr('alt');//初始化type_id
+		$('#add-confirm').dialog("open");
+	});
+	
+	$('.edited').click(function(){
+		type_id=$(this).attr('alt');
+		$('#order-confirm').dialog("open");
+	});
+
+	$('.ui-state-default').dblclick(function(){
+		id=$(this).attr('alt');//初始化id
+		$.ajax({
+			type:"post",
+			async:false,
+			dataType:'json',
+			url:"admin_website/show_one_site",
+			data:{'id':id},
+			success:function(r){
+				$("#site_name").attr("value",r.name);
+				$("#site").attr("value",r.site);
+				//editor2.sync();
+				//$("#site_info").html(r.info);
+				editor2.html(r.info);
+				//alert(r.info);
+			}
+		});
+		$('#reset-confirm').dialog("open");
+		
+	});
+	
+	
+});
+</script>
+
+
+</head>
+
+<body>
+<div id="wrap">
+<table width="96%" border="0" cellpadding="3" cellspacing="1" bgcolor="#D6D6D6" align="center"><tbody>
+    <tr> 
+      <td height="20" background="images/tbg.gif"> <table width="98%" border="0" cellpadding="0" cellspacing="0">
+          <tbody><tr> 
+            <td width="30%" height="18" style="padding-left:10px;"><strong>相关操作：</strong></td>
+            <td width="70%" align="right">&nbsp; </td>
+          </tr>
+        </tbody></table></td>
+    </tr>
+    <tr> 
+      <td height="20" valign="top" bgcolor="#FFFFFF" style="line-height:20px;">
+      	以下为相关的操作要点：    	<br/>
+      	1、单击类别可以定位到对应区域，以便查看；双击类别可以进行修改<br />
+      	2、拖动排序后，需要点击确认修改以记录顺序，双击网址可以进行修改       <br/>
+        3、在本页面修改不会立即影响到主页，请在修改完成后到更新主页栏目更新主页
+      </td>
+    </tr>
+
+  </tr>
+</tbody></table>
+<!-- -------------------网址类别显示列表----------------------------- -->
+<div id="type_container">
+	<div id="type_head">网址分类</div>
+	<div id="type_content">
+		<ul id="type_item">
+		
+			<li class="each_type_item" alt="">
+			<a class="type_click">&nbsp;&nbsp;&nbsp;</a>
+			<a href="#name" class="name">
+				</a>
+			</li>
+		</ul>
+	</div>
+	<div id="type_foot">
+		<button class="coolbg" id="open_add_type">增加类别</button>
+	</div>
+</div>
+
+<!-- -------------------网址显示列表----------------------------- -->
+
+<a name="name" ></a>
+<div class="site_container" alt="" >
+
+    <div class = "site_title"></div>
+    <div class = "site_content"  alt="">
+    	<ul id="sortable" class="connectedSortable" alt="">
+			
+				<li class="ui-state-default" alt="" title="">
+					
+				</li>
+ 			
+		 </ul>
+    </div>
+     <div class = "site_foot">
+     	<button class="coolbg add" alt="">增加网址</button>
+     	<button class="coolbg edited" alt="">确认修改</button>
+    </div>
+    
+</div>
+<!-- ----------------循环显示的结束---------------- --------------------------- -->
+
+<div id="type-confirm" title="添加分类"><br/>
+	<form>
+	<table>
+		<tr>
+		<td align="left">分类名字</td>
+		<td>:<input id="add_type" type="text" value="" size="30" /></td>
+	</tr>
+	</table>
+    </form>
+</div>
+
+<div id="type-reset-confirm" title="修改分类">
+	<form>
+	<table>
+		<tr>
+		<td align="left">分类名字</td>
+		<td>:<input id="type_name" type="text" value="" size="30" /></td>
+	</tr>
+	</table>
+    </form>
+</div>
+
+
+<div id="add-confirm" title="增加新网址"><br />
+	<form>
+	<table>
+	<tr>
+		<td align="left">添加标题</td>
+		<td>:<input id="add_name" type="text" value="" size="30" /></td>
+	</tr>
+	<tr>
+		<td align="left">添加网址</td>
+		<td>:<input id="add_site" type="text"  value="" name="site" size="30"/></td>
+	</tr>
+	<tr>
+		<td align="left">添加简介</td>
+		<td>:<textarea id="add_info" name="add_info" style="width:400px;height:100px;"></textarea></td>
+	</tr>
+	</table>
+    </form>
+</div>
+
+
+
+<div id="reset-confirm" title="修改网址">
+<br />
+	<form>
+	<table>
+		<tr>
+		<td align="left">网址名字</td>
+		<td>:<input id="site_name" type="text" value="" size="30" /></td>
+	</tr>
+		<tr>
+		<td align="left">网址地址</td>
+		<td>:<input id="site" type="text"  value="" name="site" size="30"/></td>
+	</tr>
+	<tr>
+		<td align="left">网址简介</td>
+		<td>:<textarea id="site_info" name="site_info" style="width:400px;height:100px;"></textarea></td>
+	</tr>
+	</table>
+	</form>
+</div>
+
+
+
+
+
+<div id="order-confirm" title="确认？">
+	<p>
+		<span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>
+		确认修改吗？
+	</p>
+	
+</div>
+
+
+
+
+
+</div><!-- end of wrap -->
+
+
+
+        
+<script type="text/javascript">
+(function() {
+    var $backToTopTxt = "返回顶部", $backToTopEle = $('<div class="backToTop"></div>').appendTo($("body"))
+        .text($backToTopTxt).attr("title", $backToTopTxt).click(function() {
+            $("html, body").animate({ scrollTop: 0 }, 120);
+    }), $backToTopFun = function() {
+        var st = $(document).scrollTop(), winh = $(window).height();
+        (st > 0)? $backToTopEle.show(): $backToTopEle.hide();
+        //IE6下的定位
+        if (!window.XMLHttpRequest) {
+            $backToTopEle.css("top", st + winh - 166);
+        }
+    };
+    $(window).bind("scroll", $backToTopFun);
+    $(function() { $backToTopFun(); });
+})();
+</script><!-------------back to top------------->
+<script>
+$(document).ready(function() {     
+	$('a[href*=#]').click(function() { 
+	        if (location.pathname.replace(/^\//, '') == this.pathname.replace(/^\//, '') && location.hostname == this.hostname) {
+				             var $target = $(this.hash); 
+							 $target = $target.length && $target || $('[name=' + this.hash.slice(1) + ']'); 
+							 if ($target.length) {
+								  var targetOffset = $target.offset().top;
+								  $('html,body').animate({scrollTop: targetOffset },800);
+								  return false;        
+							     }      
+								 
+				}  
+	}); 
+												   
+	var stayBottom = function(){
+		var offsetTop =   $(window).scrollTop() ;
+		if(offsetTop <400){
+			$("#icon_back2top").fadeOut("fast");	
+		}else{
+			$("#icon_back2top").fadeIn("fast");	
+		}										   
+	}
+	$(window).scroll(stayBottom).resize(stayBottom);	
+	
+									   
+});
+</script>
+
+
+</body>
+</html>
