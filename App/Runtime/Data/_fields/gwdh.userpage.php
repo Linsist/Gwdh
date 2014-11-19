@@ -1,1 +1,0 @@
-{"0":"pageId","1":"uid","2":"title","_autoinc":true,"_pk":"pageId","_type":{"pageId":"int(11)","uid":"int(10)","title":"char(40)"}}

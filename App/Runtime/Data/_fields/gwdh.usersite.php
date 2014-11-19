@@ -1,1 +1,0 @@
-{"0":"id","1":"uid","2":"title","3":"url","4":"host","5":"logo","6":"order","7":"pageId","_autoinc":true,"_pk":"id","_type":{"id":"int(11)","uid":"int(10)","title":"varchar(60)","url":"varchar(60)","host":"char(20)","logo":"char(40)","order":"int(10)","pageId":"int(11)"}}

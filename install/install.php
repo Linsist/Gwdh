@@ -2,7 +2,7 @@
 $dbfile="../database/gwdh.sql";
 header("Content-type:text/html;charset=utf-8");
 
-mysql_connect("127.0.0.1","root","") or die("connect error");
+mysql_connect("127.0.0.1","123","123") or die("connect error");
 
 var_dump(mysql_query("set names gb2312"));
 

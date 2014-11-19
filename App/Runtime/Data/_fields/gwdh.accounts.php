@@ -1,1 +1,0 @@
-{"0":"id","1":"user_account","2":"nickname","3":"figureurl","4":"encrypt_user_account","_autoinc":true,"_pk":"id","_type":{"id":"int(11)","user_account":"varchar(40)","nickname":"varchar(40)","figureurl":"varchar(100)","encrypt_user_account":"varchar(50)"}}
