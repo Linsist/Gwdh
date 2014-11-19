@@ -17,6 +17,7 @@ class IndexAction extends PublicAction
     } 
     
     public function home(){
+    	
     	$Site=new SiteModel();
     	$arr=$Site->getAllSite();//一个三维数组，包含了所有网址
     	$this->assign('arr',$arr);

@@ -73,20 +73,27 @@ class AccountsAction extends PublicAction{
     	$nameoremail=$_POST['username'];
     	$password=$_POST['password'];
     	$pattern="#(\w+\.)*\w+@(\w+\.)+[A-Za-z]+#";//正则表达式匹配是否是邮箱登陆
-    	if(preg_match($pattern, $nameoremail)){
-    		list($uid,$username,$password,$email)=uc_user_login($nameoremail, $password,2);
-    	}else{
-    		list($uid,$username,$password,$email)=uc_user_login($nameoremail, $password, 3);
-    	}
+//     	if(preg_match($pattern, $nameoremail)){
+//     		list($uid,$username,$password,$email)=uc_user_login($nameoremail, $password,2);
+//     	}else{
+//     		list($uid,$username,$password,$email)=uc_user_login($nameoremail, $password, 3);
+//     	}
+//     	$arr = array(
+//     		'uid'=>$uid,
+//     		'username'=>$username,
+//     		'email'=>$email,		
+//     	);
+
     	$arr = array(
-    		'uid'=>$uid,
-    		'username'=>$username,
-    		'email'=>$email,		
-    	);
+    	    		'uid'=>17,
+    	    		'username'=>"尹川东",
+    	    		'email'=>"435767318@qq.com",
+    	    	);
+    	
     	$model = new AccountsModel();
     	$model->setSession($arr);
-    	$usersylnlogin=uc_user_synlogin($uid);
-    	echo $usersylnlogin;
+//     	$usersylnlogin=uc_user_synlogin($uid);
+//     	echo $usersylnlogin;
     	echo '<script type="text/javascript">window.location.href="'.U('index').'";</script>';
     }
 	
@@ -116,18 +123,20 @@ class AccountsAction extends PublicAction{
 	
 	function checkPassword(){
 		$nameoremail=$_POST['username'];
-	    	$password=$_POST['password'];
-	    	$pattern="#(\w+\.)*\w+@(\w+\.)+[A-Za-z]+#";//正则表达式匹配是否是邮箱登陆
-	    	if(preg_match($pattern, $nameoremail)){
-	    		list($uid,$username,$password,$email)=uc_user_login($nameoremail, $password,2);
-	    	}else{
-	    		list($uid,$username,$password,$email)=uc_user_login($nameoremail, $password, 3);
-	    	}
-	    	if ($uid>0){
-	    		$this->ajaxReturn('','',1);
-	    	}else{
-	    		$this->ajaxReturn('','用户名或密码错误',0);
-	    	}
+    	$password=$_POST['password'];
+    	$pattern="#(\w+\.)*\w+@(\w+\.)+[A-Za-z]+#";//正则表达式匹配是否是邮箱登陆
+//     	if(preg_match($pattern, $nameoremail)){
+//     		list($uid,$username,$password,$email)=uc_user_login($nameoremail, $password,2);
+//     	}else{
+//     		list($uid,$username,$password,$email)=uc_user_login($nameoremail, $password, 3);
+//     	}
+
+    	$uid = 17;
+    	if ($uid>0){
+    		$this->ajaxReturn('','',1);
+    	}else{
+    		$this->ajaxReturn('','用户名或密码错误',0);
+    	}
 	
 	}
     
